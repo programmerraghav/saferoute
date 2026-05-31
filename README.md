@@ -1,151 +1,216 @@
-# SafeRoute — AI-Powered Road Safety System
+# 🛣️ SafeRoute — AI-Powered Road Safety System
 
-> **YOLOv8 pothole detection + automatic SOS emergency alerts for India's roads.**
+<div align="center">
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org)
-[![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-teal)](https://fastapi.tiangolo.com)
-[![Azure](https://img.shields.io/badge/Azure-CosmosDB%20%7C%20EventHub-blue)](https://azure.microsoft.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+> **🚨 YOLOv8 Pothole Detection + Automatic SOS Emergency Alerts for India's Roads**
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square&logo=node.js)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-teal?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Azure](https://img.shields.io/badge/Azure-CosmosDB%20%7C%20EventHub-0078D4?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
+</div>
 
 ---
 
-## 📋 Project Overview
+## 📋 Overview
 
-SafeRoute is a full-stack, AI-powered road safety platform with two core systems:
+**SafeRoute** is a full-stack, AI-powered road safety ecosystem designed to protect India's commuters. It combines cutting-edge computer vision with intelligent emergency response systems to create a safer road environment for everyone.
 
-| System | Technology | What it does |
+---
+
+## ⚡ Core Features
+
+<table>
+<tr>
+<td>
+
+### 🔍 **Pothole Detection Engine**
+Advanced YOLOv8 AI model that:
+- ✅ Analyzes uploaded road photos
+- ✅ Scores severity (1–10)
+- ✅ Auto-files municipal complaints
+- ✅ Provides confidence metrics
+
+</td>
+<td>
+
+### 🚨 **Emergency SOS Chain**
+Intelligent emergency response system:
+- ✅ Auto-triggers family SMS
+- ✅ Routes emergency calls (108/100)
+- ✅ Real-time GPS sharing
+- ✅ Firebase push to nearby drivers
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│          Browser (Vanilla JS SPA)               │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│   Express Backend (Node.js) :3000               │
+├─────────────────────────────────────────────────┤
+│  ✦ Azure CosmosDB      → Complaint Storage      │
+│  ✦ Azure Event Hub     → Real-time Streaming   │
+│  ✦ Twilio              → SMS + Voice Chain     │
+│  ✦ Firebase FCM        → Push Notifications    │
+│  ✦ OpenAI GPT-4o       → Summary Generation    │
+│  ✦ Google Maps API     → Location Services     │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│   FastAPI ML Server :8000                       │
+├─────────────────────────────────────────────────┤
+│  • YOLOv8 Detection Engine                      │
+│  • Pothole Classification & Severity Scoring    │
+│  • Real-time Image Analysis                     │
+└─────────────────────────────────────────────────┘
+```
+
+| System | Technology | Function |
 |---|---|---|
-| **Pothole Detection** | YOLOv8 + GPT-4o | Analyses uploaded photos, scores severity 1–10, registers municipal complaints |
-| **SOS Emergency Alert** | Twilio + Firebase | Auto-triggers emergency call chain (family → 108 → 100) with GPS sharing |
-
-**Architecture:**
-```
-Browser (Vanilla JS SPA)
-    │
-    ▼
-Express Backend (Node.js :3000)
-    ├── Azure CosmosDB      — complaint & SOS storage
-    ├── Azure Event Hub     — real-time event streaming
-    ├── Twilio              — SMS + voice call chain
-    ├── Firebase FCM        — push notifications to nearby drivers
-    ├── GPT-4o              — complaint summary generation
-    │
-    └── FastAPI ML Server (:8000)
-            └── YOLOv8      — pothole detection + severity scoring
-```
+| **Pothole Detection** | YOLOv8 + GPT-4o | Analyzes photos, scores severity 1–10, registers complaints |
+| **SOS Emergency Alert** | Twilio + Firebase | Auto-triggers emergency call chain with GPS sharing |
 
 ---
 
 ## ✅ Prerequisites
 
+### 🛠️ Required Tools
+
 | Tool | Version | Purpose |
 |---|---|---|
-| Node.js | ≥ 18.0 | Backend Express server |
-| npm | ≥ 9.0 | Package management |
-| Python | ≥ 3.10 | FastAPI ML server |
-| pip | latest | Python package management |
-| Git | any | Version control |
+| **Node.js** | ≥ 18.0 | Backend Express server runtime |
+| **npm** | ≥ 9.0 | Node package manager |
+| **Python** | ≥ 3.10 | FastAPI ML server runtime |
+| **pip** | latest | Python package manager |
+| **Git** | any | Version control system |
 
-**Cloud services required (keys in `.env`):**
-- Azure CosmosDB (NoSQL API)
-- Azure Event Hubs
-- OpenAI API (GPT-4o)
-- Twilio (SMS + Voice)
-- Firebase (FCM push notifications)
-- Google Maps JavaScript API
+### ☁️ Required Cloud Services
+
+You'll need accounts and API keys for:
+
+| Service | Purpose | Notes |
+|---|---|---|
+| 🔷 **Azure CosmosDB** | Document database for complaints & SOS | NoSQL API required |
+| 🔷 **Azure Event Hubs** | Real-time event streaming | For data pipeline |
+| 🤖 **OpenAI GPT-4o** | AI-powered complaint summaries | API key required |
+| 📱 **Twilio** | SMS & voice emergency calls | Account SID + Auth Token |
+| 🔥 **Firebase** | Push notifications to drivers | Server key + Project ID |
+| 🗺️ **Google Maps** | Location services & geocoding | JavaScript API key |
 
 ---
 
-## 🚀 Setup
+## 🚀 Quick Start Guide
 
-### 1. Clone the repository
+### Step 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/your-org/saferoute.git
+git clone https://github.com/programmerraghav/saferoute.git
 cd saferoute
 ```
 
-### 2. Configure environment variables
+### Step 2️⃣ Configure Environment Variables
 ```bash
-# Copy the example env file
-cp .env.example .env   # (or rename .env as-is)
+# Copy the environment template
+cp .env.example .env
 
-# Open .env and fill in all values:
-# - OPENAI_API_KEY
-# - COSMOS_ENDPOINT + COSMOS_KEY
-# - EVENTHUB_CONNECTION_STRING
-# - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_PHONE_NUMBER
-# - GOOGLE_MAPS_API_KEY
-# - FIREBASE_SERVER_KEY + FIREBASE_PROJECT_ID
-# - JWT_SECRET
+# ⚠️ Edit .env and fill in all required values:
+# OPENAI_API_KEY=your_key_here
+# COSMOS_ENDPOINT=https://your-db.documents.azure.com:443/
+# COSMOS_KEY=your_key_here
+# EVENTHUB_CONNECTION_STRING=Endpoint=sb://...
+# TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# TWILIO_AUTH_TOKEN=your_token_here
+# TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
+# GOOGLE_MAPS_API_KEY=your_key_here
+# FIREBASE_SERVER_KEY=your_key_here
+# FIREBASE_PROJECT_ID=your_project_id
+# JWT_SECRET=your_secret_key_here
 ```
 
-### 3. Place trained YOLOv8 model weights
+### Step 3️⃣ Place YOLOv8 Model Weights
 ```bash
-# Copy your trained .pt file to:
-models/pothole_yolov8.pt
+# Add your trained YOLOv8 weights to:
+cp /path/to/your/pothole_model.pt models/best.pt
 
-# Or update YOLO_MODEL_PATH in .env to point to a custom location
+# Or update YOLO_MODEL_PATH in .env to point to custom location
 ```
 
-### 4. Install Node.js backend dependencies
+### Step 4️⃣ Install Dependencies
+
+**Backend dependencies:**
 ```bash
 npm install
 ```
 
-### 5. Install Python ML server dependencies
+**ML server dependencies:**
 ```bash
 pip install -r ml-server/requirements.txt
 ```
 
-### 6. Start the backend server
+### Step 5️⃣ Start the Backend Server
 ```bash
 npm run dev
-# Server starts at http://localhost:3000
+# 🚀 Server running at http://localhost:3000
 ```
 
-### 7. Start the ML server (separate terminal)
+### Step 6️⃣ Start the ML Server (in a separate terminal)
 ```bash
-# From the saferoute/ project root:
+# Option A: From project root
 uvicorn ml-server.main:app --reload --port 8000
 
-# Or from inside ml-server/:
-cd ml-server
-uvicorn main:app --reload --port 8000
+# Option B: From ml-server directory
+cd ml-server && uvicorn main:app --reload --port 8000
+
+# 🤖 ML Server running at http://localhost:8000
 ```
 
-### 8. Open the application
-Navigate to **http://localhost:3000** in your browser.
+### Step 7️⃣ Open the Application
+Navigate to **http://localhost:3000** in your browser 🎉
 
 ---
 
 ## 📡 API Reference
 
-### Health
+### 💚 Health Checks
 
-| Method | Endpoint | Description |
+Check if services are running:
+
+| Method | Endpoint | Response |
 |---|---|---|
-| `GET` | `/api/health` | Server health check |
-| `GET` | `http://localhost:8000/health` | ML server health |
+| `GET` | `/api/health` | Backend server status |
+| `GET` | `http://localhost:8000/health` | ML server status |
 
 ---
 
-### Complaints
+### 📸 Complaints API
 
 #### `POST /api/complaints/register`
-Register a new pothole complaint with AI analysis.
+**Register a new pothole complaint with AI analysis**
 
-**Request:** `multipart/form-data`
+🔹 **Request Format:** `multipart/form-data`
+
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `image` | File | ✅ | Pothole photo (JPEG/PNG/WebP, max 10 MB) |
-| `user_name` | string | ✅ | Reporter's name |
-| `location_coords` | JSON string | ✅ | `{"lat": 20.3893, "lng": 72.9106}` |
-| `vehicle_type` | string | | `"car"` or `"bike"` |
-| `description` | string | | Optional description |
-| `road_name` | string | | Optional road/area name |
+| `image` | File | ✅ | Pothole photo (JPEG/PNG/WebP, ≤10MB) |
+| `user_name` | string | ✅ | Reporter's full name |
+| `location_coords` | JSON | ✅ | `{"lat": 20.3893, "lng": 72.9106}` |
+| `vehicle_type` | string | ⭕ | `"car"` or `"bike"` |
+| `description` | string | ⭕ | Optional pothole details |
+| `road_name` | string | ⭕ | Optional road/area name |
 
-**Response `201`:**
+🔹 **Response `201` (Success):**
 ```json
 {
   "complaint_id": "CMP-A1B2C3D4",
@@ -154,54 +219,64 @@ Register a new pothole complaint with AI analysis.
   "confidence": 0.8743,
   "confirmed": true,
   "bbox": [120.5, 80.2, 340.1, 260.8],
-  "ai_summary": "A large pothole with severity 7/10 has been detected...",
+  "ai_summary": "A large pothole with severity 7/10...",
   "status": "pending",
-  "message": "Complaint registered. Municipality alerted..."
+  "message": "✅ Complaint registered. Municipality alerted!"
 }
 ```
 
 ---
 
 #### `GET /api/complaints/:id`
-Fetch a single complaint by ID.
+**Fetch a specific complaint**
 
-**Response `200`:** Full complaint document from CosmosDB.
+🔹 **Response `200`:** Complete complaint document
 
 ---
 
 #### `GET /api/complaints?lat=&lng=&radius=`
-Fetch all complaints within a radius (metres) of GPS coordinates.
+**Find all complaints near a location**
 
-| Param | Type | Required | Default |
+| Parameter | Type | Required | Default |
 |---|---|---|---|
 | `lat` | float | ✅ | — |
 | `lng` | float | ✅ | — |
-| `radius` | float | | `1000` (1 km) |
+| `radius` | float | ⭕ | `1000` (1 km) |
 
-**Response `200`:**
+🔹 **Response `200`:**
 ```json
-{ "count": 5, "complaints": [...] }
+{
+  "count": 5,
+  "complaints": [...]
+}
 ```
 
 ---
 
 #### `PATCH /api/complaints/:id/status`
-Update complaint status (municipality use).
+**Update complaint status (municipality)**
 
-**Request body:**
+| Status | Meaning |
+|---|---|
+| `pending` | Awaiting review |
+| `in_progress` | Repair work started |
+| `resolved` | Repair completed |
+
+🔹 **Request Body:**
 ```json
 { "status": "in_progress" }
 ```
-Allowed values: `"pending"`, `"in_progress"`, `"resolved"`
 
 ---
 
-### SOS
+### 🚨 SOS Emergency API
 
 #### `POST /api/sos/trigger`
-Trigger an emergency SOS alert.
+**Activate emergency SOS alert**
 
-**Request body:**
+Immediately triggers the 4-step emergency response chain!
+
+🔹 **Request Body:**
 ```json
 {
   "user_name": "Raghav Sharma",
@@ -211,7 +286,7 @@ Trigger an emergency SOS alert.
 }
 ```
 
-**Response `201`:**
+🔹 **Response `201` (Triggered):**
 ```json
 {
   "sos_id": "SOS-AB123456",
@@ -219,45 +294,60 @@ Trigger an emergency SOS alert.
   "cancel_window_seconds": 10,
   "cancel_window_expires": "2025-01-01T12:00:10.000Z",
   "contacts_alerted": ["+919876543210", "108", "100"],
-  "message": "SOS activated. Emergency contacts being alerted..."
+  "message": "🚨 SOS activated! Emergency contacts being alerted..."
 }
 ```
 
-> **Note:** The response is returned immediately. The 4-step call chain (family SMS, family call, 108 log, 100 log) runs asynchronously after the response.
+> ⏱️ **Note:** Response returns immediately. The 4-step emergency call chain runs asynchronously:
+> 1. SMS to family contact
+> 2. Voice call to family
+> 3. Automatic log to 108 (Ambulance)
+> 4. Automatic log to 100 (Police)
 
 ---
 
 #### `POST /api/sos/cancel`
-Cancel an active SOS within the cancel window.
+**Cancel active SOS within the window**
 
-**Request body:**
+🔹 **Request Body:**
 ```json
 { "sos_id": "SOS-AB123456" }
 ```
 
-**Response `200`:**
+🔹 **Response `200` (Cancelled):**
 ```json
-{ "cancelled": true, "sos_id": "SOS-AB123456", "cancelled_at": "..." }
+{
+  "cancelled": true,
+  "sos_id": "SOS-AB123456",
+  "cancelled_at": "2025-01-01T12:00:05.000Z"
+}
 ```
 
-**Response `409` (window expired):**
+🔹 **Response `409` (Window Expired):**
 ```json
-{ "error": "cancel_window_expired", "message": "Cancel window expired..." }
+{
+  "error": "cancel_window_expired",
+  "message": "⏰ Cancel window has expired. Emergency services already alerted."
+}
 ```
 
 ---
 
 #### `GET /api/sos/:id`
-Fetch SOS event details.
+**Retrieve SOS event details**
+
+Returns full SOS event history and status
 
 ---
 
-### Alerts
+### 🔔 Alerts API
 
 #### `POST /api/alerts/nearby`
-Send Firebase push notifications to nearby drivers.
+**Send Firebase push notifications to nearby drivers**
 
-**Request body:**
+Alert drivers in the area about a new pothole hazard!
+
+🔹 **Request Body:**
 ```json
 {
   "location_coords": { "lat": 20.3893, "lng": 72.9106 },
@@ -268,29 +358,36 @@ Send Firebase push notifications to nearby drivers.
 }
 ```
 
-**Response `200`:**
+🔹 **Response `200` (Success):**
 ```json
-{ "notified_count": 2, "radius_meters": 80, "vehicle_type": "car", "complaint_id": "..." }
+{
+  "notified_count": 2,
+  "radius_meters": 80,
+  "vehicle_type": "car",
+  "complaint_id": "CMP-A1B2C3D4"
+}
 ```
 
 ---
 
-### Dashboard
+### 📊 Dashboard API
 
 #### `GET /api/dashboard/complaints`
-All complaints for map rendering.
+**Get all complaints for map rendering**
 
-| Query Param | Example | Description |
+| Query Param | Example | Effect |
 |---|---|---|
 | `status` | `pending` | Filter by status |
-| `severity_min` | `7` | Minimum severity score |
+| `severity_min` | `7` | Show only high severity |
 
 ---
 
 #### `GET /api/dashboard/hotspots`
-Top 10 worst road segments clustered by 1 km grid cells.
+**Get top 10 hazardous road segments**
 
-**Response `200`:**
+Data is clustered into 1 km × 1 km grid cells for heatmap visualization.
+
+🔹 **Response `200`:**
 ```json
 {
   "count": 5,
@@ -309,9 +406,9 @@ Top 10 worst road segments clustered by 1 km grid cells.
 ---
 
 #### `GET /api/dashboard/stats`
-Aggregate statistics for the municipality dashboard.
+**Get aggregate municipality statistics**
 
-**Response `200`:**
+🔹 **Response `200`:**
 ```json
 {
   "total_complaints": 48,
