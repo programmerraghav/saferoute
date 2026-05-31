@@ -1,7 +1,7 @@
 'use strict';
 /**
  * backend/middleware/auth.js
- * JWT authentication middleware.
+ * JWT authentication + role-based access control middleware.
  */
 
 const jwt = require('jsonwebtoken');
@@ -24,7 +24,7 @@ function authenticate(req, res, next) {
     return next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Unauthorized', message: 'Token expired.' });
+      return res.status(401).json({ error: 'token_expired', message: 'Access token expired. Refresh it.' });
     }
     return res.status(401).json({ error: 'Unauthorized', message: 'Invalid token.' });
   }
@@ -47,4 +47,30 @@ function optionalAuthenticate(req, res, next) {
   return next();
 }
 
-module.exports = { authenticate, optionalAuthenticate };
+/**
+ * Role-based access control middleware factory.
+ * Usage: router.get('/admin-only', authenticate, requireRole('admin'), handler)
+ * @param {...string} roles - Allowed roles (e.g. 'admin', 'municipality_employee')
+ */
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'Authentication required.' });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `This action requires one of these roles: ${roles.join(', ')}. Your role: ${req.user.role}.`,
+      });
+    }
+    return next();
+  };
+}
+
+/**
+ * Convenience shortcuts for common role guards.
+ */
+const requireAdmin = requireRole('admin');
+const requireMunicipality = requireRole('admin', 'municipality_employee');
+
+module.exports = { authenticate, optionalAuthenticate, requireRole, requireAdmin, requireMunicipality };

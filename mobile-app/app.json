@@ -1,0 +1,75 @@
+{
+  "expo": {
+    "name": "SafeRoute",
+    "slug": "saferoute-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0e1a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.saferoute.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SafeRoute uses your location to pinpoint pothole locations and send it to emergency services during SOS.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SafeRoute monitors your location in the background to detect accidents and stationary periods for automatic SOS.",
+        "NSCameraUsageDescription": "SafeRoute needs camera access to photograph potholes for reporting.",
+        "NSPhotoLibraryUsageDescription": "SafeRoute needs gallery access to attach photos to pothole reports.",
+        "NSMicrophoneUsageDescription": "SafeRoute does not use the microphone directly."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a0e1a"
+      },
+      "package": "com.saferoute.mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "SEND_SMS",
+        "CALL_PHONE",
+        "VIBRATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "FOREGROUND_SERVICE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SafeRoute monitors location for accident detection and automatic SOS.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SafeRoute uses the camera to photograph potholes."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ef4444",
+          "sounds": []
+        }
+      ],
+      "expo-sensors"
+    ]
+  }
+}

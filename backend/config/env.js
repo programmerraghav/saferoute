@@ -14,20 +14,7 @@ const required = [
   'YOLO_CONFIDENCE_THRESHOLD',
   'OPENAI_API_KEY',
   'OPENAI_MODEL',
-  'COSMOS_ENDPOINT',
-  'COSMOS_KEY',
-  'COSMOS_DATABASE',
-  'COSMOS_CONTAINER_COMPLAINTS',
-  'COSMOS_CONTAINER_SOS',
-  'COSMOS_CONTAINER_USERS',
-  'EVENTHUB_CONNECTION_STRING',
-  'EVENTHUB_NAME',
-  'TWILIO_ACCOUNT_SID',
-  'TWILIO_AUTH_TOKEN',
-  'TWILIO_PHONE_NUMBER',
-  'GOOGLE_MAPS_API_KEY',
-  'FIREBASE_SERVER_KEY',
-  'FIREBASE_PROJECT_ID',
+  // GOOGLE_MAPS_API_KEY removed — Leaflet/OpenStreetMap needs no API key
   'NEARBY_ALERT_RADIUS_BIKE',
   'NEARBY_ALERT_RADIUS_CAR',
   'EMERGENCY_AMBULANCE',
@@ -36,10 +23,21 @@ const required = [
   'SOS_STATIONARY_THRESHOLD_MINUTES',
   'JWT_SECRET',
   'JWT_EXPIRES_IN',
+  'JWT_REFRESH_SECRET',
   'COMPLAINT_RESOLUTION_SLA_HOURS',
 ];
 
 const missing = required.filter((key) => !process.env[key]);
+
+// Custom check for Firebase credentials:
+// Must have either FIREBASE_SERVICE_ACCOUNT_PATH or the three direct credentials (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY)
+const hasJsonPath = !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+const hasDirectKeys = !!(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY);
+
+if (!hasJsonPath && !hasDirectKeys) {
+  missing.push('FIREBASE_SERVICE_ACCOUNT_PATH or (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY)');
+}
+
 if (missing.length > 0) {
   console.error(
     `[SafeRoute] ❌ Missing required environment variables:\n  ${missing.join('\n  ')}\n\n` +
@@ -63,23 +61,6 @@ const env = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
 
-  // CosmosDB
-  COSMOS_ENDPOINT: process.env.COSMOS_ENDPOINT,
-  COSMOS_KEY: process.env.COSMOS_KEY,
-  COSMOS_DATABASE: process.env.COSMOS_DATABASE,
-  COSMOS_CONTAINER_COMPLAINTS: process.env.COSMOS_CONTAINER_COMPLAINTS,
-  COSMOS_CONTAINER_SOS: process.env.COSMOS_CONTAINER_SOS,
-  COSMOS_CONTAINER_USERS: process.env.COSMOS_CONTAINER_USERS,
-
-  // Event Hub
-  EVENTHUB_CONNECTION_STRING: process.env.EVENTHUB_CONNECTION_STRING,
-  EVENTHUB_NAME: process.env.EVENTHUB_NAME,
-
-  // Twilio
-  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
-  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
-  TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER,
-
   // Maps
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
   MAPS_DEFAULT_CITY: process.env.MAPS_DEFAULT_CITY || 'Vapi',
@@ -87,8 +68,10 @@ const env = {
   MAPS_DEFAULT_LNG: parseFloat(process.env.MAPS_DEFAULT_LNG || '72.9106'),
 
   // Firebase
-  FIREBASE_SERVER_KEY: process.env.FIREBASE_SERVER_KEY,
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  FIREBASE_SERVICE_ACCOUNT_PATH: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || null,
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || null,
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || null,
+  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY || null,
   NEARBY_ALERT_RADIUS_BIKE: parseInt(process.env.NEARBY_ALERT_RADIUS_BIKE, 10),
   NEARBY_ALERT_RADIUS_CAR: parseInt(process.env.NEARBY_ALERT_RADIUS_CAR, 10),
 
@@ -100,7 +83,10 @@ const env = {
 
   // JWT
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+  EMPLOYEE_INVITE_CODE: process.env.EMPLOYEE_INVITE_CODE || '',
 
   // Municipality
   MUNICIPALITY_WEBHOOK_URL: process.env.MUNICIPALITY_WEBHOOK_URL,

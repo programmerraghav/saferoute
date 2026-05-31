@@ -4,12 +4,10 @@
   "description": "SafeRoute — AI-Powered Road Safety System Backend",
   "main": "backend/server.js",
   "scripts": {
-    "dev": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "start": "NODE_ENV=production node backend/server.js"
   },
   "dependencies": {
-    "@azure/cosmos": "^4.0.0",
-    "@azure/event-hubs": "^5.12.0",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -21,10 +19,13 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^2.1.1",
-    "twilio": "^5.1.0",
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "ws": "^8.21.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

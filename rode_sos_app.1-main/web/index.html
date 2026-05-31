@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="road_complaint_app">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>road_complaint_app</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <!-- Vapi Floating Widget Integration -->
+  <script>
+    (function (d, t) {
+      var g = document.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+      g.src =
+        "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+      g.defer = true;
+      g.async = true;
+      s.parentNode.insertBefore(g, s);
+
+      g.onload = function () {
+        window.vapiSDK.run({
+          apiKey: "56f64c9c-79d6-421d-b67d-db402f44c8ab",
+          assistant: "c5693d94-e4f4-42cf-8d1d-5d201d518d05",
+          config: {
+            position: "bottom-right",
+            offset: "20px",
+            width: "50px",
+            height: "50px",
+          }
+        });
+      };
+    })(document, "script");
+  </script>
+
+  <!-- Dummy variables so Dart doesn't crash -->
+  <script>
+    window.startVapiCall = function() {
+      console.log('Use floating widget instead');
+    };
+    window.stopVapiCall = function() {
+      console.log('Use floating widget instead');
+    };
+    window.getVapiStatus = function() {
+      return 'idle';
+    };
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

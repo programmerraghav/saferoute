@@ -5,7 +5,10 @@
 
 const router = require('express').Router();
 const { upload, handleUploadError } = require('../middleware/upload');
-const { registerComplaint, getComplaint, getComplaintsByLocation, updateComplaintStatus } = require('../controllers/complaintController');
+const { registerComplaint, analyzeComplaint, getComplaint, getComplaintsByLocation, updateComplaintStatus } = require('../controllers/complaintController');
+
+// Analyze + register a pothole complaint (used by the frontend ReportPothole page)
+router.post('/analyze', upload.single('image'), handleUploadError, analyzeComplaint);
 
 // Register a new pothole complaint (with image upload)
 router.post('/register', upload.single('image'), handleUploadError, registerComplaint);
@@ -20,3 +23,4 @@ router.get('/:id', getComplaint);
 router.patch('/:id/status', updateComplaintStatus);
 
 module.exports = router;
+

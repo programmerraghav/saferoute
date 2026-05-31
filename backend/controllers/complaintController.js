@@ -19,6 +19,8 @@ async function registerComplaint(req, res) {
   try {
     // Validate inputs
     const { user_name, vehicle_type, description, road_name } = req.body;
+    // Attach authenticated user's ID if logged in (optional)
+    const submitted_by_user_id = req.user?.sub || null;
     let location_coords;
 
     try {
@@ -80,6 +82,7 @@ async function registerComplaint(req, res) {
       confidence: yoloResult.confidence,
       pothole_type: yoloResult.pothole_type,
       bbox: yoloResult.bbox,
+      user_id: submitted_by_user_id,
       status: 'pending',
       created_at: now,
       updated_at: now,
@@ -100,6 +103,14 @@ async function registerComplaint(req, res) {
       severity: yoloResult.severity,
       tokens: [], // populate from registered device DB in production
     }).catch(console.error);
+
+    // Broadcast to all WebSocket clients in range (lazy require avoids circular dep)
+    try {
+      const { broadcastPothole } = require('../server');
+      broadcastPothole({ ...complaintDoc, ai_summary });
+    } catch {
+      // WS broadcast is non-fatal
+    }
 
     return res.status(201).json({
       complaint_id,
@@ -142,7 +153,8 @@ async function getComplaintsByLocation(req, res) {
   try {
     const { lat, lng, radius } = req.query;
     if (!lat || !lng) {
-      return res.status(422).json({ error: 'invalid_input', message: 'lat and lng query params are required.' });
+      const complaints = await cosmosService.getAllComplaints();
+      return res.json({ count: complaints.length, complaints });
     }
     const radiusMeters = parseFloat(radius) || 1000;
     const complaints = await cosmosService.getComplaintsByRadius(parseFloat(lat), parseFloat(lng), radiusMeters);
@@ -179,4 +191,120 @@ async function updateComplaintStatus(req, res) {
   }
 }
 
-module.exports = { registerComplaint, getComplaint, getComplaintsByLocation, updateComplaintStatus };
+/**
+ * POST /api/complaints/analyze
+ * multipart/form-data: image file + location_coords + vehicle_type + road_name
+ * Used by the frontend ReportPothole page.
+ */
+async function analyzeComplaint(req, res) {
+  try {
+    const { vehicle_type, road_name, description } = req.body;
+    const submitted_by_user_id = req.user?.sub || null;
+    const user_name = req.user?.name || req.body.user_name || 'Anonymous';
+    let location_coords;
+
+    try {
+      location_coords = JSON.parse(req.body.location_coords || '{}');
+    } catch {
+      return res.status(422).json({ error: 'invalid_input', message: 'location_coords must be valid JSON: {"lat":0,"lng":0}' });
+    }
+
+    if (!location_coords.lat || !location_coords.lng) {
+      return res.status(422).json({ error: 'invalid_input', message: 'location_coords must contain lat and lng.' });
+    }
+    if (!req.file) {
+      return res.status(422).json({ error: 'invalid_input', message: 'An image file is required.' });
+    }
+
+    // Call YOLO service
+    const yoloResult = await yoloService.analyzeImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+
+    if (yoloResult.error === 'model_unavailable') {
+      return res.status(503).json({
+        error: 'model_unavailable',
+        message: 'The AI analysis server is currently unavailable. Please try again later.',
+      });
+    }
+
+    // Generate AI summary (non-blocking — don't fail if GPT is down)
+    let ai_summary = null;
+    try {
+      ai_summary = await gptService.generateComplaintSummary(
+        yoloResult.severity,
+        location_coords,
+        description || '',
+        yoloResult.pothole_type
+      );
+    } catch {
+      // GPT failure is non-fatal
+    }
+
+    // Build complaint document
+    const complaint_id = `CMP-${uuidv4().substring(0, 8).toUpperCase()}`;
+    const now = new Date().toISOString();
+    const complaintDoc = {
+      id: complaint_id,
+      complaint_id,
+      user_name,
+      vehicle_type: vehicle_type || 'unknown',
+      location_coords: {
+        lat: parseFloat(location_coords.lat),
+        lng: parseFloat(location_coords.lng),
+      },
+      road_name: road_name || null,
+      description: description || null,
+      ai_summary,
+      confirmed: yoloResult.confirmed,
+      severity: yoloResult.severity,
+      confidence: yoloResult.confidence,
+      pothole_type: yoloResult.pothole_type,
+      bbox: yoloResult.bbox,
+      user_id: submitted_by_user_id,
+      status: 'pending',
+      created_at: now,
+      updated_at: now,
+      sla_deadline: new Date(Date.now() + parseInt(process.env.COMPLAINT_RESOLUTION_SLA_HOURS || '24') * 3600000).toISOString(),
+    };
+
+    // Save to Firestore
+    const saved = await cosmosService.createComplaint(complaintDoc);
+
+    // Publish event (fire-and-forget)
+    eventHubService.publishEvent('complaint.created', { complaint_id, severity: yoloResult.severity, location_coords }).catch(console.error);
+
+    // Send nearby driver alerts (fire-and-forget)
+    firebaseService.sendPotholeNearbyAlert({
+      location_coords,
+      vehicle_type: vehicle_type || 'car',
+      complaint_id,
+      severity: yoloResult.severity,
+      tokens: [],
+    }).catch(console.error);
+
+    // Broadcast to WebSocket clients
+    try {
+      const { broadcastPothole } = require('../server');
+      broadcastPothole({ ...complaintDoc, ai_summary });
+    } catch {
+      // WS broadcast is non-fatal
+    }
+
+    return res.status(201).json({
+      complaint_id,
+      severity: yoloResult.severity,
+      pothole_type: yoloResult.pothole_type,
+      confidence: yoloResult.confidence,
+      confirmed: yoloResult.confirmed,
+      bbox: yoloResult.bbox,
+      ai_summary,
+      status: 'pending',
+      message: `Complaint registered. Municipality alerted. Expected action within ${process.env.COMPLAINT_RESOLUTION_SLA_HOURS || 24} hours.`,
+    });
+  } catch (err) {
+    console.error('[complaintController] analyzeComplaint error:', err);
+    return res.status(500).json({ error: 'server_error', message: 'An internal error occurred.' });
+  }
+}
+
+module.exports = { registerComplaint, analyzeComplaint, getComplaint, getComplaintsByLocation, updateComplaintStatus };
+

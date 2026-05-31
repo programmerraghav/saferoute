@@ -1,0 +1,298 @@
+/* ================================================================== */
+/*  Emergency Modal Styles                                             */
+/* ================================================================== */
+
+/* ── Overlay ── */
+.emergency-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 0, 0, 0.92);
+  backdrop-filter: blur(12px);
+  animation: overlayIn 0.3s ease-out;
+  padding: 1rem;
+}
+
+.emergency-overlay--sent {
+  background: rgba(0, 10, 5, 0.92);
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Card ── */
+.emergency-card {
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(145deg, #1a0a0a 0%, #0d0505 100%);
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  animation: cardPulse 2s ease-in-out infinite, cardIn 0.4s ease-out;
+  box-shadow:
+    0 0 60px rgba(239, 68, 68, 0.3),
+    0 0 120px rgba(239, 68, 68, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.emergency-card--sent {
+  background: linear-gradient(145deg, #0a1a0f 0%, #050d08 100%);
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow:
+    0 0 60px rgba(34, 197, 94, 0.2),
+    0 0 120px rgba(34, 197, 94, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: cardIn 0.4s ease-out;
+}
+
+@keyframes cardPulse {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow:
+      0 0 60px rgba(239, 68, 68, 0.3),
+      0 0 120px rgba(239, 68, 68, 0.1);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.9);
+    box-shadow:
+      0 0 80px rgba(239, 68, 68, 0.5),
+      0 0 160px rgba(239, 68, 68, 0.2);
+  }
+}
+
+@keyframes cardIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Warning icon ── */
+.emergency-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  color: #ef4444;
+  animation: iconPulse 1s ease-in-out infinite;
+}
+
+.emergency-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.emergency-icon-sent {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  color: #22c55e;
+}
+
+.emergency-icon-sent svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* ── Text ── */
+.emergency-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fca5a5;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.emergency-title--sent {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #86efac;
+  margin: 0 0 0.5rem;
+}
+
+.emergency-subtitle {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 2rem;
+}
+
+.emergency-message--sent {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.emergency-auto-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 2rem;
+  letter-spacing: 0.02em;
+}
+
+.emergency-alert-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.emergency-eta {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #86efac;
+  margin-bottom: 1.5rem;
+}
+
+.emergency-fallback {
+  font-size: 0.95rem;
+  color: #fca5a5;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Countdown ring ── */
+.countdown-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1rem;
+}
+
+.countdown-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.countdown-ring__bg {
+  fill: none;
+  stroke: rgba(239, 68, 68, 0.15);
+  stroke-width: 6;
+}
+
+.countdown-ring__progress {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+}
+
+.countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 60%);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Buttons ── */
+.emergency-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.emergency-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
+}
+
+.emergency-btn--safe {
+  background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+  color: #dcfce7;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+}
+
+.emergency-btn--safe:hover {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  box-shadow: 0 6px 30px rgba(34, 197, 94, 0.3);
+  transform: translateY(-1px);
+}
+
+.emergency-btn--safe:active {
+  transform: translateY(0);
+}
+
+.emergency-btn--help {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.emergency-btn--help:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  box-shadow: 0 6px 30px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.emergency-btn--help:active {
+  transform: translateY(0);
+}
+
+.emergency-btn--dismiss {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.emergency-btn--dismiss:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .emergency-card {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .emergency-title,
+  .emergency-title--sent {
+    font-size: 1.4rem;
+  }
+
+  .countdown-number {
+    font-size: 2.5rem;
+  }
+}

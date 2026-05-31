@@ -91,20 +91,10 @@ async function triggerSOS(req, res) {
         // Update the SOS record with call chain results
         const existing = await cosmosService.getSOSEvent(sos_id);
         if (existing && existing.status === 'triggered') {
-          // Only update if not cancelled
-          const { sos } = await cosmosService._getContainers
-            ? await cosmosService._getContainers()
-            : {};
-          // Update via service — re-read and update
-          const updatedDoc = { ...existing, call_chain: steps, chain_completed_at: new Date().toISOString() };
-          // Direct cosmos update
-          const { CosmosClient } = require('@azure/cosmos');
-          const client = new CosmosClient({ endpoint: env.COSMOS_ENDPOINT, key: env.COSMOS_KEY });
-          await client
-            .database(env.COSMOS_DATABASE)
-            .container(env.COSMOS_CONTAINER_SOS)
-            .item(existing.id, existing.id)
-            .replace(updatedDoc);
+          await cosmosService.updateSOSEvent(sos_id, {
+            call_chain: steps,
+            chain_completed_at: new Date().toISOString()
+          });
         }
       } catch (chainErr) {
         console.error('[sosController] Emergency chain error:', chainErr.message);

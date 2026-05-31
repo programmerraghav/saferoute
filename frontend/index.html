@@ -1,85 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-  <!-- SEO -->
-  <title>SafeRoute — AI-Powered Road Safety System</title>
-  <meta name="description" content="SafeRoute uses YOLOv8 AI to detect potholes and an automatic SOS emergency alert system to keep Indian roads safer. Report potholes, trigger SOS, and view live hotspot dashboards." />
-  <meta name="keywords" content="road safety, pothole detection, SOS emergency, YOLOv8, AI, India, SafeRoute, accident alert" />
-  <meta name="author" content="SafeRoute Team" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="SafeRoute — AI-Powered Road Safety System" />
-  <meta property="og:description" content="YOLOv8 pothole detection + automatic SOS emergency alerts for India's roads." />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="en_IN" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="SafeRoute — AI Road Safety" />
-  <meta name="twitter:description" content="AI-powered pothole detection and SOS emergency alerts." />
-
-  <!-- PWA / Icons -->
-  <meta name="theme-color" content="#0a0e1a" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="SafeRoute" />
-
-  <!-- Preconnect for Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="/src/styles/global.css" />
-
-  <!-- Config injected by Express at render time via a script tag.
-       The values below are populated server-side when serving index.html.
-       For development with a static file server, set these manually. -->
-  <script id="app-config">
-    // These values are replaced by the server when serving index.html.
-    // In production, Express sets them via res.send(html.replace(...)).
-    window.__SAFEROUTE_CONFIG__ = {
-      mapsApiKey: '%%GOOGLE_MAPS_API_KEY%%',
-      defaultLat: '%%MAPS_DEFAULT_LAT%%',
-      defaultLng: '%%MAPS_DEFAULT_LNG%%',
-      alertRadiusCar: '%%NEARBY_ALERT_RADIUS_CAR%%',
-      alertRadiusBike: '%%NEARBY_ALERT_RADIUS_BIKE%%',
-    };
-  </script>
-</head>
-
-<body>
-  <!-- Navbar mount point -->
-  <div id="nav-wrapper"></div>
-
-  <!-- SPA root — all pages render here.
-       data-* attributes carry server-injected config for frontend JS. -->
-  <div
-    id="app"
-    data-maps-key="%%GOOGLE_MAPS_API_KEY%%"
-    data-default-lat="%%MAPS_DEFAULT_LAT%%"
-    data-default-lng="%%MAPS_DEFAULT_LNG%%"
-    data-alert-radius-car="%%NEARBY_ALERT_RADIUS_CAR%%"
-    data-alert-radius-bike="%%NEARBY_ALERT_RADIUS_BIKE%%"
-  ></div>
-
-  <!-- Toast notification container -->
-  <div id="toast-container"></div>
-
-  <!-- App entry -->
-  <script type="module" src="/src/main.js"></script>
-
-  <!-- Noscript fallback -->
-  <noscript>
-    <div style="font-family:sans-serif;text-align:center;padding:4rem;color:#9ca3af;background:#0a0e1a;min-height:100vh">
-      <h1 style="color:#f59e0b">SafeRoute</h1>
-      <p>JavaScript is required to run this application.</p>
-      <p>Emergency numbers: <strong style="color:#f59e0b">108</strong> (Ambulance) · <strong style="color:#f59e0b">100</strong> (Police)</p>
-    </div>
-  </noscript>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SafeRoute — AI Road Safety & SOS System</title>
+    <meta name="description" content="SafeRoute uses AI-powered YOLOv8 pothole detection and real-time SOS emergency alerts. Report potholes, trigger emergency alerts, and protect lives on India's roads." />
+    <meta name="theme-color" content="#0a0e1a" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
+

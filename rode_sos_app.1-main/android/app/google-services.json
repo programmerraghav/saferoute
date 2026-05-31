@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "868817718139",
+    "project_id": "road-complaint-syste",
+    "storage_bucket": "road-complaint-syste.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868817718139:android:28ffab29812a857b028bde",
+        "android_client_info": {
+          "package_name": "com.example.road_complaint_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtFaCjP_IVG2kO80KiWoxQBav4XmRukTo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

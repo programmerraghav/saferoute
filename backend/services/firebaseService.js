@@ -2,13 +2,11 @@
 /**
  * backend/services/firebaseService.js
  * Firebase Cloud Messaging (FCM) push notification service.
- * Uses the legacy FCM HTTP API v1 with the FIREBASE_SERVER_KEY.
+ * Uses the shared initialized admin instance from central firebase config.
  */
 
-const axios = require('axios');
+const firebaseConfig = require('../config/firebase');
 const env = require('../config/env');
-
-const FCM_URL = 'https://fcm.googleapis.com/fcm/send';
 
 /**
  * Send a push notification to a list of FCM device tokens.
@@ -25,35 +23,34 @@ async function sendNearbyAlert({ title, body, data = {}, tokens }) {
     return { notified_count: 0, failed_count: 0 };
   }
 
-  const payload = {
-    registration_ids: tokens,
-    notification: {
-      title,
-      body,
-      icon: '/public/assets/icon-192.png',
-      click_action: 'FLUTTER_NOTIFICATION_CLICK',
-    },
-    data: {
-      ...data,
-      click_action: 'FLUTTER_NOTIFICATION_CLICK',
-    },
-    priority: 'high',
-  };
+  // Ensure all data values are string types (required by FCM V1)
+  const stringData = {};
+  for (const [key, value] of Object.entries(data)) {
+    stringData[key] = String(value);
+  }
+
+  const messaging = firebaseConfig.messaging;
+
+  // Mock / Log-only mode if SDK is not initialized
+  if (!messaging) {
+    console.log(`[firebaseService] [MOCK] Sending push to ${tokens.length} tokens: "${title}" - ${body}`);
+    return { notified_count: tokens.length, failed_count: 0 };
+  }
 
   try {
-    const response = await axios.post(FCM_URL, payload, {
-      headers: {
-        Authorization: `key=${env.FIREBASE_SERVER_KEY}`,
-        'Content-Type': 'application/json',
+    const response = await messaging.sendEachForMulticast({
+      tokens,
+      notification: {
+        title,
+        body,
       },
-      timeout: 10000,
+      data: stringData,
     });
 
-    const { success, failure } = response.data;
-    console.log(`[firebaseService] Sent ${success} notifications, ${failure} failed.`);
-    return { notified_count: success, failed_count: failure };
+    console.log(`[firebaseService] Sent ${response.successCount} notifications, ${response.failureCount} failed.`);
+    return { notified_count: response.successCount, failed_count: response.failureCount };
   } catch (err) {
-    console.error('[firebaseService] FCM request failed:', err.message);
+    console.error('[firebaseService] FCM send multicast failed:', err.message);
     return { notified_count: 0, failed_count: tokens.length, error: err.message };
   }
 }

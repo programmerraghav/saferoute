@@ -1,72 +1,81 @@
 'use strict';
 /**
  * backend/services/cosmosService.js
- * Azure CosmosDB service — wraps all read/write operations for the app.
+ * Firestore implementation of complaints & SOS database storage.
  */
 
-const { CosmosClient } = require('@azure/cosmos');
+const firebaseConfig = require('../config/firebase');
 const env = require('../config/env');
 
-let _client = null;
-let _db = null;
-let _containers = {};
+const roadDetailsService = require('./roadDetailsService');
+
+// Bounded in-memory mock databases for fallback
+const mockComplaints = new Map();
+const mockSOSEvents = new Map();
 
 /**
- * Lazy-initialise the CosmosDB client and cache containers.
+ * Helper to get the Firestore database or return null if not initialized.
  */
-async function getContainers() {
-  if (_db) return _containers;
-
-  _client = new CosmosClient({
-    endpoint: env.COSMOS_ENDPOINT,
-    key: env.COSMOS_KEY,
-  });
-
-  _db = _client.database(env.COSMOS_DATABASE);
-
-  _containers.complaints = _db.container(env.COSMOS_CONTAINER_COMPLAINTS);
-  _containers.sos = _db.container(env.COSMOS_CONTAINER_SOS);
-  _containers.users = _db.container(env.COSMOS_CONTAINER_USERS);
-
-  return _containers;
+function getFirestoreDb() {
+  return firebaseConfig.db || null;
 }
 
 // ── COMPLAINTS ────────────────────────────────────────────────────────────────
 
 async function createComplaint(complaintDoc) {
-  const { complaints } = await getContainers();
-  const { resource } = await complaints.items.create(complaintDoc);
-  return resource;
+  const db = getFirestoreDb();
+  if (db) {
+    await db.collection('complaints').doc(complaintDoc.complaint_id).set(complaintDoc);
+  } else {
+    mockComplaints.set(complaintDoc.complaint_id, JSON.parse(JSON.stringify(complaintDoc)));
+  }
+  return complaintDoc;
 }
 
 async function getComplaint(complaint_id) {
-  const { complaints } = await getContainers();
-  const querySpec = {
-    query: 'SELECT * FROM c WHERE c.complaint_id = @id',
-    parameters: [{ name: '@id', value: complaint_id }],
-  };
-  const { resources } = await complaints.items.query(querySpec).fetchAll();
-  return resources[0] || null;
+  const db = getFirestoreDb();
+  let c = null;
+  if (db) {
+    const doc = await db.collection('complaints').doc(complaint_id).get();
+    if (doc.exists) c = doc.data();
+  } else {
+    const mockC = mockComplaints.get(complaint_id);
+    if (mockC) c = JSON.parse(JSON.stringify(mockC));
+  }
+  if (c) {
+    const rd = roadDetailsService.getRoadDetails(c.road_name);
+    c.contractor_name = rd.contractor_name;
+    c.tender_date = rd.tender_date;
+    c.tender_amount = rd.tender_amount;
+    c.warranty_period = rd.warranty_period;
+  }
+  return c;
 }
 
 async function updateComplaintStatus(complaint_id, status) {
-  const { complaints } = await getContainers();
   const existing = await getComplaint(complaint_id);
   if (!existing) throw new Error(`Complaint ${complaint_id} not found`);
-  const updated = { ...existing, status, updated_at: new Date().toISOString() };
-  const { resource } = await complaints.item(existing.id, existing.id).replace(updated);
-  return resource;
+  const now = new Date().toISOString();
+  
+  const db = getFirestoreDb();
+  if (db) {
+    await db.collection('complaints').doc(complaint_id).update({
+      status,
+      updated_at: now
+    });
+  } else {
+    existing.status = status;
+    existing.updated_at = now;
+    mockComplaints.set(complaint_id, existing);
+  }
+  
+  return { ...existing, status, updated_at: now };
 }
 
 async function getComplaintsByRadius(lat, lng, radiusMeters) {
-  const { complaints } = await getContainers();
-  // CosmosDB geospatial queries require a spatial index;
-  // fall back to application-level haversine filter.
-  const { resources } = await complaints.items
-    .query('SELECT * FROM c WHERE c.status != "deleted"')
-    .fetchAll();
-
-  return resources.filter((c) => {
+  const all = await getAllComplaints();
+  
+  return all.filter((c) => {
     if (!c.location_coords) return false;
     const d = haversineMeters(lat, lng, c.location_coords.lat, c.location_coords.lng);
     return d <= radiusMeters;
@@ -74,21 +83,48 @@ async function getComplaintsByRadius(lat, lng, radiusMeters) {
 }
 
 async function getAllComplaints(filters = {}) {
-  const { complaints } = await getContainers();
-  let query = 'SELECT * FROM c WHERE 1=1';
-  const params = [];
-
-  if (filters.status) {
-    query += ' AND c.status = @status';
-    params.push({ name: '@status', value: filters.status });
+  const db = getFirestoreDb();
+  
+  let complaints = [];
+  if (db) {
+    let query = db.collection('complaints');
+    if (filters.status) {
+      query = query.where('status', '==', filters.status);
+    }
+    if (filters.user_id) {
+      query = query.where('user_id', '==', filters.user_id);
+    }
+    const snapshot = await query.get();
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (filters.severity_min !== undefined) {
+        if (data.severity >= Number(filters.severity_min)) {
+          complaints.push(data);
+        }
+      } else {
+        complaints.push(data);
+      }
+    });
+  } else {
+    for (const c of mockComplaints.values()) {
+      if (filters.status && c.status !== filters.status) continue;
+      if (filters.user_id && c.user_id !== filters.user_id) continue;
+      if (filters.severity_min !== undefined && c.severity < Number(filters.severity_min)) continue;
+      complaints.push(JSON.parse(JSON.stringify(c)));
+    }
   }
-  if (filters.severity_min !== undefined) {
-    query += ' AND c.severity >= @sev';
-    params.push({ name: '@sev', value: Number(filters.severity_min) });
-  }
-
-  const { resources } = await complaints.items.query({ query, parameters: params }).fetchAll();
-  return resources;
+  
+  // Enrich each complaint with road contractor/tender details
+  return complaints.map(c => {
+    const rd = roadDetailsService.getRoadDetails(c.road_name);
+    return {
+      ...c,
+      contractor_name: rd.contractor_name,
+      tender_date: rd.tender_date,
+      tender_amount: rd.tender_amount,
+      warranty_period: rd.warranty_period
+    };
+  });
 }
 
 async function getHotspots() {
@@ -118,8 +154,15 @@ async function getHotspots() {
 
 async function getStats() {
   const all = await getAllComplaints();
-  const sosCont = (await getContainers()).sos;
-  const { resources: sosEvents } = await sosCont.items.query('SELECT * FROM c').fetchAll();
+  const db = getFirestoreDb();
+  
+  let sosCount = 0;
+  if (db) {
+    const snapshot = await db.collection('sos_events').get();
+    sosCount = snapshot.size;
+  } else {
+    sosCount = mockSOSEvents.size;
+  }
 
   const total = all.length;
   const resolved = all.filter((c) => c.status === 'resolved').length;
@@ -135,27 +178,49 @@ async function getStats() {
   }
   const top_affected_area = Object.entries(grid).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
-  return { total_complaints: total, resolved, pending, in_progress, total_sos_events: sosEvents.length, avg_severity, top_affected_area };
+  return { total_complaints: total, resolved, pending, in_progress, total_sos_events: sosCount, avg_severity, top_affected_area };
 }
 
 // ── SOS EVENTS ────────────────────────────────────────────────────────────────
 
 async function createSOSEvent(sosDoc) {
-  const { sos } = await getContainers();
-  const { resource } = await sos.items.create(sosDoc);
-  return resource;
+  const db = getFirestoreDb();
+  if (db) {
+    await db.collection('sos_events').doc(sosDoc.sos_id).set(sosDoc);
+  } else {
+    mockSOSEvents.set(sosDoc.sos_id, JSON.parse(JSON.stringify(sosDoc)));
+  }
+  return sosDoc;
 }
 
 async function getSOSEvent(sos_id) {
-  const { sos } = await getContainers();
-  const { resources } = await sos.items
-    .query({ query: 'SELECT * FROM c WHERE c.sos_id = @id', parameters: [{ name: '@id', value: sos_id }] })
-    .fetchAll();
-  return resources[0] || null;
+  const db = getFirestoreDb();
+  if (db) {
+    const doc = await db.collection('sos_events').doc(sos_id).get();
+    if (!doc.exists) return null;
+    return doc.data();
+  } else {
+    const s = mockSOSEvents.get(sos_id);
+    return s ? JSON.parse(JSON.stringify(s)) : null;
+  }
+}
+
+async function updateSOSEvent(sos_id, fields) {
+  const existing = await getSOSEvent(sos_id);
+  if (!existing) throw new Error(`SOS event ${sos_id} not found`);
+
+  const updated = { ...existing, ...fields };
+
+  const db = getFirestoreDb();
+  if (db) {
+    await db.collection('sos_events').doc(sos_id).update(fields);
+  } else {
+    mockSOSEvents.set(sos_id, updated);
+  }
+  return updated;
 }
 
 async function cancelSOS(sos_id) {
-  const { sos } = await getContainers();
   const existing = await getSOSEvent(sos_id);
   if (!existing) throw new Error(`SOS event ${sos_id} not found`);
 
@@ -169,9 +234,21 @@ async function cancelSOS(sos_id) {
     throw err;
   }
 
-  const updated = { ...existing, status: 'cancelled', cancelled_at: new Date().toISOString() };
-  const { resource } = await sos.item(existing.id, existing.id).replace(updated);
-  return resource;
+  const cancelled_at = new Date().toISOString();
+  
+  const db = getFirestoreDb();
+  if (db) {
+    await db.collection('sos_events').doc(sos_id).update({
+      status: 'cancelled',
+      cancelled_at
+    });
+  } else {
+    existing.status = 'cancelled';
+    existing.cancelled_at = cancelled_at;
+    mockSOSEvents.set(sos_id, existing);
+  }
+
+  return { ...existing, status: 'cancelled', cancelled_at };
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -196,5 +273,6 @@ module.exports = {
   getStats,
   createSOSEvent,
   getSOSEvent,
+  updateSOSEvent,
   cancelSOS,
 };

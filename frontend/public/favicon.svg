@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <mask id="road-mask">
+      <rect width="200" height="200" fill="white" />
+      <path d="M -10 150 C 60 130, 110 95, 200 45 L 200 80 C 100 130, 50 200, -10 230 Z" fill="black" />
+    </mask>
+  </defs>
+  
+  <g mask="url(#road-mask)">
+    <path d="M 60 20 L 140 20 L 180 55 L 180 130 C 180 170, 130 185, 100 195 C 70 185, 20 170, 20 130 L 20 55 Z" fill="#008C99" stroke="#008C99" stroke-width="6" stroke-linejoin="round" />
+  </g>
+  
+  <g fill="#008C99">
+    <path d="M 25 185 L 30 165 L 55 155 L 50 175 Z" />
+    <path d="M 85 145 L 88 132 L 105 125 L 102 138 Z" />
+    <path d="M 135 106 L 137 97 L 150 91 L 148 100 Z" />
+    <path d="M 170 82 L 171 76 L 182 71 L 181 77 Z" />
+  </g>
+</svg>
